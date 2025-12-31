@@ -157,10 +157,15 @@ For security vulnerabilities, please email security@actproof.ai.
 
 ActProof.ai is an enterprise AI compliance platform helping organizations navigate EU AI Act requirements. We provide automated scanning, risk assessment, and compliance monitoring for AI systems.
 
-**Contact:**
-- Website: https://app.actproof.ai
-- Email: info@actproof.ai
-- Twitter: [@actproof_ai](https://twitter.com/actproof_ai)
+**Publisher Information:**
+| | |
+|---|---|
+| **Company** | ActProof.ai |
+| **Website** | https://app.actproof.ai |
+| **Email** | info@actproof.ai |
+| **Support Email** | support@actproof.ai |
+| **Twitter** | [@actproof_ai](https://twitter.com/actproof_ai) |
+| **GitHub** | [Edoardoba/actproof-action](https://github.com/Edoardoba/actproof-action) |
 
 ---
 

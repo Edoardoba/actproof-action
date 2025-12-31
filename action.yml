@@ -1,6 +1,6 @@
 name: 'ActProof.ai EU AI Act Compliance Scanner'
-description: 'Automated EU AI Act compliance scanning for AI/ML repositories'
-author: 'ActProof.ai'
+description: 'Automated EU AI Act compliance scanning for AI/ML repositories. Detects AI models, generates AI Bill of Materials (AI-BOM), evaluates compliance with EU AI Act requirements, and provides risk assessment.'
+author: 'ActProof.ai <info@actproof.ai>'
 branding:
   icon: 'shield'
   color: 'blue'

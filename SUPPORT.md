@@ -69,9 +69,11 @@ We follow responsible disclosure practices.
 - 🐦 Follow us on Twitter: [@actproof_ai](https://twitter.com/actproof_ai)
 - 💼 LinkedIn: [ActProof.ai](https://linkedin.com/company/actproof)
 
-### 📊 Status
+### 📊 Service Status
 
-Check service status at: https://app.actproof.ai/status
+For service updates and status:
+- **Status Page**: https://app.actproof.ai/status
+- **GitHub Status**: Check [GitHub Actions workflow runs](https://github.com/Edoardoba/actproof-action/actions) for action health
 
 ---
 
