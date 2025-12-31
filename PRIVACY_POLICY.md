@@ -16,7 +16,6 @@ When you use our GitHub Action, we may process:
 - **Source code**: Code files are analyzed locally within GitHub Actions runners
 - **AI/ML components**: Information about detected AI models, datasets, and dependencies
 
-
 #### 2.2 What We Do NOT Collect
 - We do **NOT** store your source code permanently
 - We do **NOT** collect personal information beyond what GitHub provides
