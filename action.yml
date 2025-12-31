@@ -1,0 +1,166 @@
+name: 'ActProof.ai EU AI Act Compliance Scanner'
+description: 'Automated EU AI Act compliance scanning for AI/ML repositories'
+author: 'ActProof.ai'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  scan_mode:
+    description: 'Scan mode: "local" (default, runs locally) or "api" (requires deployed backend)'
+    required: false
+    default: 'local'
+
+  api_url:
+    description: 'ActProof.ai API URL (only for api mode)'
+    required: false
+    default: 'https://app.actproof.ai'
+
+  api_key:
+    description: 'ActProof.ai API key (only for api mode)'
+    required: false
+    default: ''
+
+  repository_path:
+    description: 'Path to repository to scan (default: current directory)'
+    required: false
+    default: '.'
+
+  output_format:
+    description: 'Output format: "json", "html", or "both"'
+    required: false
+    default: 'both'
+
+  fail_on_non_compliant:
+    description: 'Fail the workflow if compliance score is below threshold'
+    required: false
+    default: 'false'
+
+  compliance_threshold:
+    description: 'Minimum compliance score (0-100) required to pass'
+    required: false
+    default: '80'
+
+  upload_artifacts:
+    description: 'Upload compliance reports as artifacts'
+    required: false
+    default: 'true'
+
+  create_issue:
+    description: 'Create GitHub issue with compliance gaps'
+    required: false
+    default: 'false'
+
+  github_token:
+    description: 'GitHub token for creating issues (required if create_issue=true)'
+    required: false
+    default: ''
+
+outputs:
+  compliance_score:
+    description: 'Overall compliance score (0-100)'
+
+  compliant:
+    description: 'Whether system is compliant (true/false)'
+
+  risk_level:
+    description: 'Detected risk level (MINIMAL, LIMITED, HIGH, UNACCEPTABLE)'
+
+  critical_gaps_count:
+    description: 'Number of critical compliance gaps'
+
+  report_path:
+    description: 'Path to generated compliance report'
+
+  scan_id:
+    description: 'ActProof.ai scan ID for reference'
+
+  dashboard_url:
+    description: 'URL to view full compliance dashboard'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        # Install ActProof.ai requirements for local scanning
+        pip install \
+          pydantic \
+          pydantic-settings \
+          gitpython \
+          tree-sitter \
+          tree-sitter-python \
+          tree-sitter-javascript \
+          requests \
+          pyyaml \
+          toml \
+          python-dotenv \
+          spdx-tools \
+          aiofiles \
+          httpx
+
+    - name: Run ActProof.ai Scanner
+      shell: bash
+      env:
+        INPUT_SCAN_MODE: ${{ inputs.scan_mode }}
+        INPUT_API_URL: ${{ inputs.api_url }}
+        INPUT_API_KEY: ${{ inputs.api_key }}
+        INPUT_REPOSITORY_PATH: ${{ inputs.repository_path }}
+        INPUT_OUTPUT_FORMAT: ${{ inputs.output_format }}
+        INPUT_FAIL_ON_NON_COMPLIANT: ${{ inputs.fail_on_non_compliant }}
+        INPUT_COMPLIANCE_THRESHOLD: ${{ inputs.compliance_threshold }}
+        INPUT_UPLOAD_ARTIFACTS: ${{ inputs.upload_artifacts }}
+        INPUT_CREATE_ISSUE: ${{ inputs.create_issue }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_SHA: ${{ github.sha }}
+        GITHUB_REF: ${{ github.ref }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
+        GITHUB_WORKFLOW: ${{ github.workflow }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        PYTHONPATH: ${{ github.action_path }}
+      run: |
+        if [ "$INPUT_SCAN_MODE" = "api" ]; then
+          echo "📡 Using API mode"
+          python ${{ github.action_path }}/github_action/run_scan_api.py
+        else
+          echo "💻 Using local scan mode"
+          python ${{ github.action_path }}/github_action/run_scan.py
+        fi
+
+    - name: Upload compliance reports
+      if: inputs.upload_artifacts == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: actproof-compliance-reports
+        path: |
+          actproof-report.json
+          actproof-report.html
+          *_ai-bom_*.spdx.json
+        retention-days: 90
+
+    - name: Create compliance issue
+      if: inputs.create_issue == 'true' && env.COMPLIANCE_FAILED == 'true'
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          const fs = require('fs');
+          const issueBody = fs.readFileSync('compliance-issue.md', 'utf8');
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🔴 EU AI Act Compliance Gaps Detected',
+            body: issueBody,
+            labels: ['compliance', 'eu-ai-act', 'security']
+          });
+

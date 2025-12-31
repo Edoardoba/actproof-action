@@ -1,0 +1,93 @@
+# Advanced workflow example with all features
+# Copy this file to your repository's .github/workflows/ directory
+#
+# File: .github/workflows/compliance-advanced.yml
+
+name: EU AI Act Compliance (Advanced)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan on Sunday
+  workflow_dispatch:
+
+jobs:
+  compliance-scan:
+    name: Full Compliance Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Run ActProof.ai Scanner
+        id: actproof
+        uses: Edoardoba/actproof-action@v1
+        with:
+          # Fail if compliance score below 90%
+          fail_on_non_compliant: 'true'
+          compliance_threshold: '90'
+          
+          # Generate both JSON and HTML reports
+          output_format: 'both'
+          upload_artifacts: 'true'
+          
+          # Create issue if non-compliant
+          create_issue: 'true'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const score = '${{ steps.actproof.outputs.compliance_score }}';
+            const compliant = '${{ steps.actproof.outputs.compliant }}';
+            const riskLevel = '${{ steps.actproof.outputs.risk_level }}';
+            const gaps = '${{ steps.actproof.outputs.critical_gaps_count }}';
+            
+            const emoji = compliant === 'true' ? '✅' : '❌';
+            
+            const body = `## 🛡️ EU AI Act Compliance Scan Results
+            
+            | Metric | Value |
+            |--------|-------|
+            | **Compliance Score** | ${score}% |
+            | **Status** | ${emoji} ${compliant === 'true' ? 'COMPLIANT' : 'NON-COMPLIANT'} |
+            | **Risk Level** | ${riskLevel} |
+            | **Critical Gaps** | ${gaps} |
+            
+            📄 Full reports available in workflow artifacts.
+            
+            ---
+            *Scanned by [ActProof.ai](https://github.com/marketplace/actions/actproof-ai-eu-ai-act-compliance-scanner)*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Post Summary
+        if: always()
+        run: |
+          echo "## 🛡️ EU AI Act Compliance Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Compliance Score | ${{ steps.actproof.outputs.compliance_score }}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ steps.actproof.outputs.compliant == 'true' && '✅ COMPLIANT' || '❌ NON-COMPLIANT' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Risk Level | ${{ steps.actproof.outputs.risk_level }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Critical Gaps | ${{ steps.actproof.outputs.critical_gaps_count }} |" >> $GITHUB_STEP_SUMMARY
+

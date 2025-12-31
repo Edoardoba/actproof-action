@@ -1,0 +1,19 @@
+EU AI ACT - Articolo 11
+Requisiti per sistemi AI ad alto rischio
+
+I sistemi AI ad alto rischio devono soddisfare i seguenti requisiti:
+
+a) Descrizione generale del sistema AI, incluso lo scopo previsto
+b) Descrizione della logica del sistema AI e dei suoi algoritmi
+c) Specifiche tecniche del sistema AI
+d) Metriche di accuratezza, robustezza e cybersecurity
+e) Sistema di gestione dei rischi
+
+Articolo 13 - Trasparenza
+I sistemi AI devono essere trasparenti e informare gli utenti.
+
+Articolo 14 - Supervisione Umana
+I sistemi AI ad alto rischio richiedono supervisione umana appropriata.
+
+Articolo 15 - Accuratezza, Robustezza, Cybersecurity
+I sistemi AI devono essere accurati, robusti e sicuri.

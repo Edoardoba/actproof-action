@@ -1,0 +1,40 @@
+# Example workflow for ActProof.ai EU AI Act Compliance Scanner
+# Copy this file to your repository's .github/workflows/ directory
+#
+# File: .github/workflows/compliance.yml
+
+name: EU AI Act Compliance Check
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  compliance-scan:
+    name: ActProof.ai Compliance Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run ActProof.ai Scanner
+        id: actproof
+        uses: Edoardoba/actproof-action@v1
+        with:
+          fail_on_non_compliant: 'false'
+          compliance_threshold: '80'
+          upload_artifacts: 'true'
+
+      - name: Display compliance results
+        run: |
+          echo "## 🛡️ EU AI Act Compliance Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Compliance Score:** ${{ steps.actproof.outputs.compliance_score }}%" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.actproof.outputs.compliant == 'true' && '✅ COMPLIANT' || '❌ NON-COMPLIANT' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Risk Level:** ${{ steps.actproof.outputs.risk_level }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Critical Gaps:** ${{ steps.actproof.outputs.critical_gaps_count }}" >> $GITHUB_STEP_SUMMARY
+
